@@ -15,7 +15,7 @@ try {
         'email VARCHAR(50) NOT NULL UNIQUE,' .
         'registration_sequence VARCHAR(50) NOT NULL,' .
         'has_registered BOOLEAN DEFAULT FALSE,' .
-        'is_admin BOOLEAN DEFAULT FALSE)'
+        'admin BOOLEAN DEFAULT FALSE)'
     );
 
 	$st->execute();
@@ -50,8 +50,8 @@ try
 		'user_id INT,'.
         'movie_id INT,'.
         'rating INT CHECK (rating >= 1 AND rating <= 10),'.
-        'FOREIGN KEY (user_id) REFERENCES Users(id),'.
-        'FOREIGN KEY (movie_id) REFERENCES Movies(id)'
+        'FOREIGN KEY (user_id) REFERENCES korisnici(id),'.
+        'FOREIGN KEY (movie_id) REFERENCES filmovi(id)'
 		);
 
 	$st->execute();
@@ -69,8 +69,8 @@ try
 		'user_id INT NOT NULL,'.
 		'movie_id INT NOT NULL,'.
 		'watched BOOLEAN DEFAULT FALSE,'.
-		'FOREIGN KEY (user_id) REFERENCES Users(id),'.
-		'FOREIGN KEY (movie_id) REFERENCES Movies(id)'
+		'FOREIGN KEY (user_id) REFERENCES korisnici(id),'.
+		'FOREIGN KEY (movie_id) REFERENCES filmovi(id)'
 	);
 
 	$st->execute();
@@ -88,7 +88,7 @@ try {
         'id_film int NOT NULL,' .
         'tekst TEXT NOT NULL,' .
         'datum DATE NOT NULL,' .
-        'FOREIGN KEY (id_korisnik) REFERENCES users(id),' .
+        'FOREIGN KEY (id_korisnik) REFERENCES korisnici(id),' .
         'FOREIGN KEY (id_film) REFERENCES filmovi(id))'
     );
 
@@ -102,7 +102,7 @@ echo "Napravio tablicu komentari.<br />";
 
 
 try {
-    $st = $db->prepare('INSERT INTO users(username, password, email, registration_sequence, has_registered, is_admin) VALUES (:username, :password, :email, :registration_sequence, :has_registered, :is_admin)');
+    $st = $db->prepare('INSERT INTO korisnici(username, password, email, registration_sequence, has_registered, is_admin) VALUES (:username, :password, :email, :registration_sequence, :has_registered, :is_admin)');
 
     $st->execute(array(
         'username' => 'Pero', 
