@@ -102,7 +102,7 @@ echo "Napravio tablicu komentari.<br />";
 
 
 try {
-    $st = $db->prepare('INSERT INTO korisnici(username, password, email, registration_sequence, has_registered, is_admin) VALUES (:username, :password, :email, :registration_sequence, :has_registered, :is_admin)');
+    $st = $db->prepare('INSERT INTO korisnici(username, password, email, registration_sequence, has_registered, admin) VALUES (:username, :password, :email, :registration_sequence, :has_registered, :admin)');
 
     $st->execute(array(
         'username' => 'Pero', 
