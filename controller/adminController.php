@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../model/tekaservice.class.php';
+require_once __DIR__ . '/../model/functions.class.php';
 require_once __DIR__ . '/../model/movie.class.php';
 
 require_once __DIR__ . '/../controller/userController.php';
@@ -14,34 +14,60 @@ class adminController{
             require_once __DIR__ . '/../view/signin.php';
         }
 
-
-        //otvori watchlistu 
-        elseif( (int)$_SESSION['admin'] )
+        else
         {
-            $x = new TekaService;
-            $username = $x->getUsername();
+            
+            $info = '';
+            $emptylist = '';
             $title = 'My profile';
+            $emptyratings = '';
+
+            $x = new functions;
+            
+            $username = $x->getUsername( $_SESSION['id_user'] );
+            
+            
             $watchList = [];
             $watchList = $x->getWatchlist();
-            $movieList;
+            $movieList = [];
+
+
             for( $i = 0; $i < sizeof($watchList); ++$i )
             {
                $movieList[$i] = $x->getMovie( $watchList[$i]->id_movie );
             }
-            require_once __DIR__ . '/../view/admin.php';
+
+            if ( sizeof($movieList) === 0 ) 
+            {
+                $emptylist = 'Your Watchlist is empty!';
+            }
+
+            $ratedMoviesList = $x->getAllRatedMovies();
+
+            if( sizeof($ratedMoviesList) === 0)
+            {
+                $emptyratings = "You haven't rated any movies!";
+            }
+
+            for( $i = 0; $i < sizeof($ratedMoviesList); ++$i )
+            {
+               $ratingsList[$i] = $x->getRating( $ratedMoviesList[$i]->id_movie );
+            }
+
+            if ( (int)$_SESSION['admin'] )
+                require_once __DIR__ . '/../view/admin.php';
+
+
+            else 
+                require_once __DIR__ . '/../view/myprofile.php';
         }
-
-
-        //otvori watchlistu plus adminske opcije
-        else 
-            require_once __DIR__ . '/../view/myprofile.php';
     }
 
     public function eraseuser(){
 
         if ( isset( $_POST['eraseuser'] ) )
         {
-            $x = new TekaService;
+            $x = new functions;
             $username = $_POST['search_users'];
             $id = $x->getUserId( $username );
             $x->eraseUser( $id );
@@ -56,7 +82,7 @@ class adminController{
 
         if ( isset( $_POST['erasecomment'] ) )
         {
-            $x = new TekaService;
+            $x = new functions;
             $content = $_POST['search_comments'];
             $id = $x->getCommentId( $content );
             $x->eraseComment( $id );
@@ -70,17 +96,39 @@ class adminController{
 
     public function newmovie()
     {
-        $x = new TekaService;
+        $x = new functions;
         $x->newMovie();
+        if(isset( $_POST['newtitle']))
+            $title = $_POST['newtitle'];
         require_once __DIR__ . '/../view/newmovie.php';
-
-
 
     }
 
-    //fja za dodavanje admina
+
     public function addadmin()
     {
+        $x = new functions;
+        $admin = $x->newAdmin( $_POST['new_admin'] );
+        if ( $admin )
+            $info = 'This user is already admin.';
+        else 
+            $info = 'User ' . $_POST['new_admin'] . ' is now also admin.';
+
+        $title = 'My profile';
+
+        $x = new functions;
+        
+        $username = $x->getUsername( $_SESSION['id_user'] );
+        
+        
+        $watchList = [];
+        $watchList = $x->getWatchlist();
+        $movieList;
+        for( $i = 0; $i < sizeof($watchList); ++$i )
+        {
+            $movieList[$i] = $x->getMovie( $watchList[$i]->id_movie );
+        }
+        require_once __DIR__ . '/../view/admin.php';
 
     }
 
@@ -94,6 +142,7 @@ class adminController{
 
         require_once __DIR__ . '/../view/_header.php';
         require_once __DIR__ . '/../view/menu.php';
+        echo '<h1>Dobrodošli na IMDB klon</h1>';
         require_once __DIR__ . '/../view/_footer.php';
 
     }
