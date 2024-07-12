@@ -14,8 +14,8 @@ try {
         'password VARCHAR(50) NOT NULL,' .
         'email VARCHAR(50) NOT NULL UNIQUE,' .
         'registration_sequence VARCHAR(50) NOT NULL,' .
-        'has_registered BOOLEAN DEFAULT FALSE,' .
-        'admin BOOLEAN DEFAULT FALSE)'
+        'has_registered INT DEFAULT -1,' .
+        'admin BOOLEAN INT DEFAULT -1)'
     );
 
 	$st->execute();
@@ -145,8 +145,8 @@ try {
         'password' => password_hash('majinasifra', PASSWORD_DEFAULT), 
         'email' => 'maja@gmail.com', 
         'registration_sequence' => 'seq1415', 
-        'has_registered' => true, 
-        'admin' => true
+        'has_registered' => 1, 
+        'admin' => -1
     ));
 }
 

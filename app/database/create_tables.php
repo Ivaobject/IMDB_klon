@@ -23,8 +23,8 @@ function create_table_korisnici()
 			'password VARCHAR(50) NOT NULL,' .
 			'email VARCHAR(50) NOT NULL UNIQUE,' .
 			'registration_sequence VARCHAR(50) NOT NULL,' .
-			'has_registered BOOLEAN DEFAULT FALSE,' .
-			'admin BOOLEAN DEFAULT FALSE)'
+			'has_registered INT DEFAULT -1,' .
+			'admin INT DEFAULT -1)'
 		);
 	
 
