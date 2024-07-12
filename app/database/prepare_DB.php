@@ -109,8 +109,8 @@ try {
         'password' => password_hash('perinasifra', PASSWORD_DEFAULT), 
         'email' => 'pero@gmail.com', 
         'registration_sequence' => 'seq1234', 
-        'has_registered' => true, 
-        'admin' => false
+        'has_registered' => 1, 
+        'admin' => -1
     ));
 
     $st->execute(array(
@@ -118,8 +118,8 @@ try {
         'password' => password_hash('mirkovasifra', PASSWORD_DEFAULT), 
         'email' => 'mirko@yahoo.com', 
         'registration_sequence' => 'seq5678', 
-        'has_registered' => true, 
-        'admin' => false
+        'has_registered' => 1, 
+        'admin' => -1
     ));
 
     $st->execute(array(
@@ -127,8 +127,8 @@ try {
         'password' => password_hash('slavkovasifra', PASSWORD_DEFAULT), 
         'email' => 'slavko@gmail.com', 
         'registration_sequence' => 'seq91011', 
-        'has_registered' => true, 
-        'admin' => false
+        'has_registered' => 1, 
+        'admin' => -1
     ));
 
     $st->execute(array(
@@ -136,8 +136,8 @@ try {
         'password' => password_hash('aninasifra', PASSWORD_DEFAULT), 
         'email' => 'ana@gmail.com', 
         'registration_sequence' => 'seq1213', 
-        'has_registered' => true, 
-        'admin' => false
+        'has_registered' => 1, 
+        'admin' => -1
     ));
 
     $st->execute(array(
