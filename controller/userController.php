@@ -8,7 +8,7 @@ class userController{
     public function index()
     {
         require_once __DIR__ . '/../view/_header.php';
-        require_once __DIR__ . '/../view/menu.php';
+        require_once __DIR__ . '/../view/meni.php';
         echo '<h1>Dobrodošli na IMDB klon</h1>';
         require_once __DIR__ . '/../view/_footer.php';
     }
@@ -26,7 +26,7 @@ class userController{
     }
 
     public function verifyUser(){
-        $cs = new function;
+        $cs = new functions;
         $user = $cs->getUser();
     }
 

@@ -1,3 +1,4 @@
+
 <?php
 
 require __DIR__ . '/../app/database/db.class.php';
@@ -7,67 +8,49 @@ require __DIR__ . '/rating.class.php';
 require __DIR__ . '/comment.class.php';
 require __DIR__ . '/watchlist.class.php';
 
-class functions{
+class functions {
 
+    private $db; // Dodano kao privatno svojstvo za vezu s bazom podataka
 
-
-    public function getUserId( $username )
-    {
-            $db = DB::getConnection();
-            $st = $db->prepare( 'SELECT id FROM korisnici WHERE username=:username' );
-            $st->execute( ['username' => $username] );
-            $row = $st->fetch();
-            
-            return $row;
+    public function __construct() {
+        $this->db = DB::getConnection(); // Inicijalizacija veze s bazom podataka
     }
 
-    public function isUserAdmin()
-    {
-            $db = DB::getConnection();
-            $st = $db->prepare( 'SELECT admin FROM korisnici WHERE id=:id' );
-            $st->execute( ['id' => $_SESSION['id_korisnik']] );
-            $row = $st->fetch();
-            
-            return $row;
-    }
-
-
-    public function getUsername( $id ) 
-    {
-        $db = DB::getConnection();
-        $st = $db->prepare( 'SELECT * FROM korisnici WHERE id=:id' );
-        $st->execute( ['id' => $id] );
+    public function getUserId($username) {
+        $st = $this->db->prepare('SELECT id FROM korisnici WHERE username=:username');
+        $st->execute(['username' => $username]);
         $row = $st->fetch();
-    
-        return $user->username;
+
+        return $row['id']; // Vraćanje samo ID-a, ne cijelog reda
     }
-        
-    public function eraseUser( $id )
-    {
-        $db = DB::getConnection();
-        $st = $db->prepare( 'DELETE FROM korisnici WHERE id LIKE :id' );
+
+    public function isUserAdmin() {
+        $st = $this->db->prepare('SELECT admin FROM korisnici WHERE id=:id');
+        $st->execute(['id' => $_SESSION['id_korisnik']]);
+        $row = $st->fetch();
+
+        return $row['admin']; // Vraćanje samo admin statusa, ne cijelog reda
+    }
+
+    public function eraseUser($id) {
+        $st = $this->db->prepare('DELETE FROM korisnici WHERE id LIKE :id');
         $st->execute(['id' => $id]);
         return;
-
     }
 
-    public function loginUser()
-    {
-            $db = DB::getConnection();
+    public function loginUser() {
+        $st = $this->db->prepare('SELECT has_registered FROM korisnici WHERE username=:username');
+        $st->execute(['username' => $_POST["username"]]);
+        $row = $st->fetch();
 
-            $st = $db->prepare( 'SELECT has_registered FROM korisnici WHERE username=:username' );
-            $st->execute( array( 'username' => $_POST["username"] ) );
-            $row = $st->fetch();
-            if ($row === 0)
-                return false;
+        if ($row['has_registered'] === '0') // Provjera treba li vratiti false
+            return false;
 
-            $st = $db->prepare( 'SELECT password_hash FROM korisnici WHERE username=:username' );
-            $st->execute( array( 'username' => $_POST["username"] ) );
+        $st = $this->db->prepare('SELECT password_hash FROM korisnici WHERE username=:username');
+        $st->execute(['username' => $_POST["username"]]);
+        $row = $st->fetch();
 
-            $row = $st->fetch();
-
-            return $row;
-
+        return $row['password_hash']; // Vraćanje samo password_hash-a, ne cijelog reda
     }
 
     public function newUser(){
@@ -104,7 +87,7 @@ class functions{
         $to       = $_POST['newemail'];
         $subject  = 'Registracijski mail';
         $message  = 'Poštovani ' . $_POST['newusername'] . "!\nZa dovršetak registracije kliknite na sljedeći link: ";
-        $message .= 'http://' . $_SERVER['SERVER_NAME'] . htmlentities( dirname( $_SERVER['PHP_SELF'] ) ) . '/teka.php?niz=' . $reg_seq . "\n";
+        $message .= 'http://' . $_SERVER['SERVER_NAME'] . htmlentities( dirname( $_SERVER['PHP_SELF'] ) ) . '/index.php?niz=' . $reg_seq . "\n";
         $headers  = 'From: rp2@studenti.math.hr' . "\r\n" .
                     'Reply-To: rp2@studenti.math.hr' . "\r\n" .
                     'X-Mailer: PHP/' . phpversion();
@@ -117,16 +100,20 @@ class functions{
         exit();
     }
 
-    public function getMovie( $id_movie )
-    {
-        $db = DB::getConnection();
-        $st = $db->prepare( 'SELECT * FROM filmovi WHERE id_movie=:id_movie' );
-        $st->execute( [ 'id_movie' => $id_movie ] );
-        $row = $st->fetch();
 
-        $movie = new Movie( $row['id_movie'], $row['title'], $row['director'], $row['release_year'], $row['genre'], $row['cast'], $row['average_rating'] );
+    public function getMovie($id_movie) {
+        $st = $this->db->prepare('SELECT * FROM filmovi WHERE id=:id_movie');
+        $st->execute(['id_movie' => $id_movie]);
+        $row = $st->fetch();
+    
+        if (!$row) {
+            return null; // Return null if no movie found
+        }
+    
+        $movie = new Movie($row['id'], $row['title'], $row['director'], $row['year'], $row['genre'], $row['actors'], $row['rating']);
         return $movie;
     }
+    
 
 
     public function getWatchlist ()
@@ -147,22 +134,14 @@ class functions{
         {
 
             $db = DB::getConnection();
-            $st = $db->prepare( 'SELECT * FROM korisnici WHERE id=:id' );
+            $st = $db->prepare( 'SELECT * FROM korisnici WHERE id=:id_user' );
             $st->execute( ['id' => $_SESSION['id_user']] );
             $row = $st->fetch();
             $user = new User ($row['id'], $row['username'], $row['password_hash'], $row['email'], $row['registration_sequence'], $row['has_registered'], $row['admin']);
 
             return $user->username;
         }
-        
-        public function eraseUser( $id )
-        {
-            $db = DB::getConnection();
-            $st = $db->prepare( 'DELETE FROM korisnici WHERE id LIKE :id' );
-            $st->execute(['id' => $id]);
-            return;
 
-        }
 
         public function getCommentId( $content )
         {
@@ -188,7 +167,7 @@ class functions{
         {
             $db = DB::getConnection();
             try{
-                $st = $db->prepare( 'INSERT INTO filmovi(title, director, release_year, genre, cast, average_rating) VALUES ' .
+                $st = $db->prepare( 'INSERT INTO filmovi(title, director, year, genre, cast, rating) VALUES ' .
                             '(:title, :director, :release_year, :genre, :cast, 0)' );
                 $st->execute( array( 'title' => $_POST['newtitle'], 
                             'director' => $_POST['newdirector'], 
@@ -204,11 +183,11 @@ class functions{
         public function getTitle( $id_movie ) 
         {
             $db = DB::getConnection();
-            $st = $db->prepare( 'SELECT * FROM filmovi WHERE id_movie=:id_movie' );
+            $st = $db->prepare( 'SELECT * FROM filmovi WHERE id=:id_movie' );
             $st->execute( [ 'id_movie' => $id_movie ] );
             $row = $st->fetch();
     
-            $movie = new Movie( $row['id_movie'], $row['title'], $row['director'], $row['release_year'], $row['genre'], $row['cast'], $row['average_rating'] );
+            $movie = new Movie( $row['id'], $row['title'], $row['director'], $row['year'], $row['genre'], $row['actors'], $row['rating'] );
             return $movie->title;
         }
     
@@ -218,10 +197,10 @@ class functions{
             $db = DB::getConnection();
             $st = $db->prepare( 'SELECT * FROM filmovi ORDER BY title' );
             $st->execute();
-            //public function __construct( $id, $title, $genre, $year, $director, $cast, $average_rating )
+      
     
             while( $row = $st->fetch() )
-                $movies[] = new Movie($row['id_movie'], $row['title'], $row['director'], $row['release_year'], $row['genre'], $row['cast'], $row['average_rating']);
+                $movies[] = new Movie($row['id'], $row['title'], $row['director'], $row['year'], $row['genre'], $row['actors'], $row['rating']);
     
             return $movies;
         }
@@ -230,11 +209,11 @@ class functions{
         {
             $movies = [];
             $db = DB::getConnection();
-            $st = $db->prepare( 'SELECT * FROM filmovi ORDER BY average_rating DESC LIMIT 0,5' );
+            $st = $db->prepare( 'SELECT * FROM filmovi ORDER BY rating DESC LIMIT 0,5' );
             $st->execute();
     
             while( $row = $st->fetch() )
-                $movies[] = new Movie($row['id_movie'], $row['title'], $row['director'], $row['release_year'], $row['genre'], $row['cast'], $row['average_rating']);
+                $movies[] = new Movie($row['id_movie'], $row['title'], $row['director'], $row['year'], $row['genre'], $row['cast'], $row['rating']);
     
             return $movies;
         }
@@ -247,7 +226,7 @@ class functions{
             $st = $db->prepare( 'SELECT id_movie, COUNT(*) FROM watchlists GROUP BY id_movie ORDER BY 2 DESC LIMIT 0,5');
             $st->execute();
     
-            $ls = new TekaService;
+            $ls = new functions;
     
             while( $row = $st->fetch() )
                 $movies[] = $ls->getMovie($row['id_movie']);
@@ -258,20 +237,19 @@ class functions{
         public function getNumberOfWatchlists( $id_movie )
         {
             $db = DB::getConnection();
-            $st = $db->prepare( 'SELECT id_movie(*) FROM watchlists WHERE id_movie=:id_movie');
+            $st = $db->prepare( 'SELECT COUNT(*) FROM watchlists WHERE id_movie=:id_movie');
             $st->execute( ['id_movie' => $id_movie] );
-    
-            return $st->fetch();
+
+            return $st->fetchColumn();
         }
-    
         public function getCast( $id_movie ) 
         {
     
             $db = DB::getConnection();
-            $st = $db->prepare( 'SELECT * FROM filmovi WHERE id_movie=:id_movie' );
+            $st = $db->prepare( 'SELECT * FROM filmovi WHERE id=:id_movie' );
             $st->execute( ['id_movie' => $id_movie] );
             $row = $st->fetch();
-            $cast = $row['cast'];
+            $cast = $row['actors'];
     
             return $cast;
         }
@@ -281,11 +259,11 @@ class functions{
             $allcomments = [];
     
             $db = DB::getConnection();
-            $st = $db->prepare( 'SELECT * FROM komentari WHERE id_movie=:id_movie ORDER BY date' );
+            $st = $db->prepare( 'SELECT * FROM komentari WHERE id_movie=:id_movie ORDER BY datum' );
             $st->execute( ['id_movie' => $id_movie] );
     
             while( $row = $st->fetch() )
-                $allcomments[] = new Comment( $row['id'], $row['id_user'], $row['id_movie'], $row['content'], $row['date'] );
+                $allcomments[] = new Comment( $row['id'], $row['id_user'], $row['id_movie'], $row['tekst'], $row['datum'] );
     
             return $allcomments;
         }
@@ -344,15 +322,21 @@ class functions{
             $allmovies = [];
     
             $db = DB::getConnection();
-            $st = $db->prepare( 'SELECT * FROM filmovi WHERE release_year=:release_year' );
+            $st = $db->prepare( 'SELECT * FROM filmovi WHERE year=:year' );
             $st->execute( ['release_year' => $year] );
     
             while( $row = $st->fetch() )
-            $allmovies[] = new Movie($row['id_movie'], $row['title'], $row['director'], $row['release_year'], $row['genre'], $row['cast'], $row['average_rating']);
+            $allmovies[] = new Movie($row['id_movie'], $row['title'], $row['director'], $row['year'], $row['genre'], $row['cast'], $row['rating']);
     
             return $allmovies;
         }
-    
+        
+        public function searchByActor($actorName) {
+            $stmt = $this->db->prepare("SELECT * FROM movies WHERE actors LIKE :actorName");
+            $actorName = '%' . $actorName . '%';
+            $stmt->execute([':actorName' => $actorName]);
+            return $stmt->fetchAll(PDO::FETCH_OBJ);
+        }
 
 }
 

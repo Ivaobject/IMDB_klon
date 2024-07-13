@@ -14,7 +14,7 @@ if ($emptylist === 'Your Watchlist is empty!') {
     echo '<ul>';
     foreach ($movieList as $movie) {
         echo '<li>
-                <form method="post" action="teka.php?rt=movies/movie">
+                <form method="post" action="index.php?rt=movies/movie">
                     <input type="submit" name="movie_title" value="' . htmlspecialchars($movie->title) . '" />
                     <input type="hidden" name="movie_id" value="' . htmlspecialchars($movie->id_movie) . '" />
                 </form>
@@ -31,7 +31,7 @@ if ($emptyratings === "You haven't rated any movies!") {
     echo '<ul>';
     foreach ($ratedMoviesList as $index => $movie) {
         echo '<li>
-                <form method="post" action="teka.php?rt=movies/movie">
+                <form method="post" action="index.php?rt=movies/movie">
                     <input type="submit" name="movie_title" value="' . htmlspecialchars($movie->title) . '" />
                     <input type="hidden" name="movie_id" value="' . htmlspecialchars($movie->id_movie) . '" />
                 </form>
@@ -45,7 +45,7 @@ if ($emptyratings === "You haven't rated any movies!") {
 <br>
 <br>
 
-<form method="post" action="teka.php?rt=admin/logout">
+<form method="post" action="index.php?rt=admin/logout">
     <button type="submit" name="logout">Log out</button>
 </form>
 

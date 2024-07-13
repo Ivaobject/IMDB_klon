@@ -1,7 +1,4 @@
 <?php
-
-
-
 session_start();
 
 if( !isset( $_GET['rt'] ) && !isset( $_GET['niz'] ) )
@@ -9,33 +6,38 @@ if( !isset( $_GET['rt'] ) && !isset( $_GET['niz'] ) )
     $controller = 'user';
     $action = 'index';
 }
+
 elseif( isset( $_GET['niz'] ) ){
     $controller = 'user';
     $action = 'verifyUser';
 
     $_SESSION['niz'] = $_GET['niz'];
 }
+
 else{
     $parts = explode( '/', $_GET['rt'] );
 
-    $controllerName = $parts[0] . 'Controller';
-    if( isset( $parts[1] ) )
+    if( isset( $parts[0] ) && preg_match( '/^[A-Za-z0-9]+$/', $parts[0] ) )
+        $controller = $parts[0];
+    else
+        $controller = 'user';
+
+    
+    if( isset( $parts[1] ) && preg_match( '/^[A-Za-z0-9]+$/', $parts[1] ) )
         $action = $parts[1];
     else
         $action = 'index';
-    
 }
 
-// Controller $controllerName se nalazi poddirektoriju controller
-$controllerFileName = 'controller/' . $controllerName . '.php';
 
-// Includeaj tu datoteku
-require_once $controllerFileName;
+$controllerName = $controller . 'Controller';
 
-// Stvori pripadni kontroler
-$con = new $controllerName; 
+require_once __DIR__ . '/controller/' . $controllerName . '.php';
 
-// Pozovi odgovarajuću akciju
+$con = new $controllerName();
+
 $con->$action();
+
+exit(0);
 
 ?>

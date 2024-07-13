@@ -1,10 +1,10 @@
 <?php
 require_once __DIR__ . '/_header.php';
-require_once __DIR__ . '/menu.php';
+require_once __DIR__ . '/meni.php';
 ?>
 
 <h3>Login</h3>
-<form method="post" action="teka.php?rt=user/login">
+<form method="post" action="index.php?rt=user/login">
     <p>
         <label for="username">Korisnicko ime:</label>
         <input type="text" name="username" id="username" required>
@@ -19,9 +19,9 @@ require_once __DIR__ . '/menu.php';
 </form>
 
 <h3>Nemas racun? Registriraj se.</h3>
-<form method="post" action="teka.php?rt=user/register">
+<form method="post" action="index.php?rt=user/register">
     <p>
-        <label for="newusername">KOrisnicko ime: (3-20 znakova)</label>
+        <label for="newusername">Korisnicko ime: (3-20 znakova)</label>
         <input type="text" name="newusername" id="newusername" pattern="[A-Za-z]{3,20}" title="3-20 letters" required>
     </p>
     <p>

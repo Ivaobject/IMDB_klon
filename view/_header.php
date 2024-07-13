@@ -6,4 +6,4 @@
 	<link rel="stylesheet" href=" ">		<!-- ovdje treba dodati dosta toga-->        
 </head>
 <body>
-	<h1><?php echo $title; ?></h1>
+	<h1><?php echo "IMDB klon"; ?></h1>
