@@ -31,59 +31,35 @@ class userController{
     }
 
     public function login()
-    {
-               
-	            if( !isset( $_POST["username"] ) || preg_match( '/[a-zA-Z]{3, 20}/', $_POST["username"] ) )
-                {
-                    $x = new userController;
-                    $x->signin();
-                }
-
-               
-                if( !isset( $_POST["password"] ) )
-                {
-                    $x = new userController;
-                    $x->signin();
-                }
-
-                $provjera = new functions;
-                $row = $provjera->loginUser();
-
-                if( $row === false )
-                {
-                
-                    $x = new userController;
-                    $x->signin();
-                    return;
-                }
-                else
-                {
-
-
-                    $hash = $row['password_hash'];
-
-                  
-                    if( password_verify( $_POST['password'], $hash ) )
-                    {
-                      
-                        $y = new functions;
-                        $_SESSION['id_user'] = $y->getUserId();
-                        $_SESSION['admin'] = $y->isUserAdmin();
-
-                        $x = new userController;
-                        $x->index();
-
-                        return;
-                    }
-                    else
-                    {
-                        
-                        $x = new userController;
-                        $x->signin();
-                        return;
-                    }
-                }
+{
+    if (!isset($_POST["username"]) || !isset($_POST["password"])) {
+        $this->signin(); // Ako nedostaju korisničko ime ili lozinka, prikaži ponovno prijavljivanje
+        return;
     }
+
+    $username = $_POST["username"];
+    $password = $_POST["password"];
+
+    $cs = new functions();
+    $row = $cs->loginUser($username, $password);
+
+    if ($row === false) {
+        $this->signin(); // Neuspješna prijava, prikaži ponovno prijavljivanje
+        return;
+    }
+
+    $hash = $row['password_hash'];
+
+    if (password_verify($password, $hash)) {
+        // Prijava je uspješna, postavi sesijske varijable
+        $_SESSION['id_user'] = $cs->getUserId($username);
+        $_SESSION['admin'] = $cs->isUserAdmin();
+
+        $this->index(); // Preusmjeri na glavnu stranicu
+    } else {
+        $this->signin(); // Neuspješna provjera lozinke, prikaži ponovno prijavljivanje
+    }
+}
 
     public function register(){
  

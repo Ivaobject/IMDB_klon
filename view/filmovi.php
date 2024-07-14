@@ -1,116 +1,77 @@
+
 <?php require_once __DIR__ . '/_header.php'; ?>
-<?php require_once __DIR__ . '/menu.php'; ?>
+<?php require_once __DIR__ . '/meni.php'; ?>
 
-<?php
+<h2><?php echo $title; ?></h2>
 
+<ul>
+    <li>
+        <?php if ((int) $movie->rating === 0): ?>
+            <span id="prosocijena">Nitko još nije ocijenio ovaj film.</span>
+        <?php else: ?>
+            <span id="prosocijena"><?php echo $movie->rating; ?></span>
+        <?php endif; ?>
+    </li>
+    <li>Godina: <?php echo $movie->year; ?></li>
+    <li>Žanr: <?php echo $movie->genre; ?></li>
+    <li>Redatelj: <?php echo $movie->director; ?></li>
+</ul>
 
-echo '<h2>' . $title . '</h2>';
+<br>
 
-echo
-    '<ul>' . 
-    '<li>: ';
-    if( (int) $movie->rating === -1)
-        echo '<span id="prosocijena">' .'Nitko još nije ocijenio ovaj film.' . '</span>';
-    else 
-        echo '<span id="prosocijena">' .$movie->rating . '</span>';
-echo
-    '</li>' .
-    '<li>Godina: ' .
-    $movie->year .
-    '</li>' .
-    '<li>Žanr: ' .
-    $movie->genre .
-    '</li>' .
-    '<li>Redatelj: ' .
-    $movie->director .
-    '</li>' .
-    '</ul>';
+<?php if ($rating !== -2): ?>
+    <?php if ($rating !== -1): ?>
+        Vaša ocjena: <span id="tvojaocijena"><?php echo $rating; ?></span>
+    <?php else: ?>
+        Your rating: <span id="tvojaocijena">Niste još ocijenili ovaj film!</span>
+    <?php endif; ?>
 
-echo '<br>';
-if( $rating !== -2 )
-{
-    if( $rating !== -1 )
-    {
-        echo 'Vaša ocijena: ' . '<span id="tvojaocijena">' . $rating . '</span>';
-    }
-    else
-    {
-        echo 'Your rating: ' . '<span id="tvojaocijena">' . "Niste još ocijenili ovaj film!" . '</span>';
-    }
+    <form method="post" action="index.php?rt=movies/rate">
+        <input type="hidden" name="id_movie" value="<?php echo $movie->id; ?>">
+        <h4>Ocijenite ovaj film:</h4>
+        <select name="rating" id="rating">
+            <?php for ($i = 0; $i <= 10; $i++): ?>
+                <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+            <?php endfor; ?>
+        </select>
+        <button type="submit" name="rate" id="rate">Ocijeni!</button>
+    </form>
+<?php endif; ?>
 
-    echo '
-    <h4>Rate this movie:</h4>
-    <select name="rating" id="rating">
-        <option value="0">0</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10</option>
-    </select>
-    <button type="submit" name="rate" id="rate">Ocijeni!</button>';
-}
+<br><br>
 
-echo '<br><br>';
-
-if( !$isOnWatchlist )
-{
-    echo 
-    '<label for="newwatchlist">
+<?php if (isset($isOnWatchlist) && !$isOnWatchlist): ?>
     <form method="post" action="index.php?rt=movies/watchlist">
-    <button type="submit" name="watchlist">Dodajte film na svoj watchlist!</button>
-    </label>
-    </form>';
-    echo '<br>';
-}
+        <input type="hidden" name="id_movie" value="<?php echo $movie->id; ?>">
+        <button type="submit" name="watchlist">Dodajte film na svoj watchlist!</button>
+    </form>
+    <br>
+<?php endif; ?>
 
+<h4>Glumci</h4>
+<?php foreach ($castList as $cast): ?>
+    <p><?php echo $cast; ?><br></p>
+<?php endforeach; ?>
 
-echo '<h4>' . 'Cast' . '</h4>';
-    foreach ( $castList as $cast )
-    {
-        
-        echo 
-            '<p>' . 
-            $cast . ' ' .
-            '<br>' .
-            '</p>';
-    }
+<br>
 
-echo '<br>';
+<h3>Komentari</h3>
+<?php foreach ($commentList as $i => $comment): ?>
+    <p><?php echo $usersList[$i]; ?> <?php echo $comment->tekst; ?><br><?php echo $comment->datum; ?><br></p>
+<?php endforeach; ?>
 
-echo '<h3>' . 'Komentari' . '</h3>';
-$i = 0;
-    foreach ( $commentList as $comment )
-    {        
-        echo 
-            '<p>' . 
-            $usersList[$i++] . ' ' .
-            $comment->tekst .
-            '<br>' .
-            $comment->datum .
-            '<br>' .
-            '</p>';
-    }
-?>
+<br>
 
-<?php 
-echo '<br>
 <label for="newreview">
-Dodaj komentar:
-<br>
-<form method="post" action="index.php?rt=movies/newcomment">
-<textarea name="content" cols="100" rows="10"></textarea>
+    Dodaj komentar:
+    <form method="post" action="index.php?rt=movies/newcomment">
+        <input type="hidden" name="id_movie" value="<?php echo $movie->id; ?>">
+        <textarea name="content" cols="100" rows="10"></textarea>
+        <br>
+        <button type="submit" name="comment">Pošalji komentar!</button>
+    </form>
 </label>
-<br>
-<button type="submit" name="comment">Pošalji komentar!</button>
-</form>';
 
-?>
-
+<script src="promijeniocijenu.js"></script>
 
 <?php require_once __DIR__ . '/_footer.php'; ?>

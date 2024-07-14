@@ -8,12 +8,12 @@
 <?php
 foreach ($movieList as $movie) {
     echo '<li>
-            <form method="post" action="index.php?rt=movies/movie">
+            <form method="post" action="index.php?rt=movies/toprated">
                 <input type="submit" name="movie_title" value="' . htmlspecialchars($movie->title) . '" />
-                <input type="hidden" name="movie_id" value="' . htmlspecialchars($movie->id_movie) . '" />
+                <input type="hidden" name="movie_id" value="' . htmlspecialchars($movie->id) . '" />
             </form>
-            Average rating: ';
-    if ((int) $movie->average_rating === -1) {
+            Ocjena: ';
+    if ((int) $movie->rating === 0) {
         echo 'Nitko još nije ocijenio ovaj film';
     } else {
         echo htmlspecialchars($movie->rating);

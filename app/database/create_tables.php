@@ -2,11 +2,12 @@
 
 require_once __DIR__ . '/db.class.php';
 
-create_table_korisnici();
+/*create_table_korisnici();
 create_table_filmovi();
 create_table_komentari();
 create_table_ocijene();
-create_table_watchlists();
+create_table_watchlists();*/
+create_table_ocjene();
 
 function create_table_korisnici()
 {
@@ -116,5 +117,26 @@ function create_table_komentari()
     catch( PDOException $e ) { exit( "PDO error (create_table_komentari): " . $e->getMessage() ); }
 
     echo "Napravio tablicu komentari.<br />";
+}
+
+
+function create_table_ocjene()
+{
+    $db = DB::getConnection();
+
+    try
+    {
+		$st = $db->prepare( 
+			'CREATE TABLE IF NOT EXISTS ocjene (' .
+			'id_user int NOT NULL,' .
+			'id_movie int NOT NULL,' .
+			'rating int NOT NULL)'
+		);
+
+        $st->execute();
+    }
+    catch( PDOException $e ) { exit( "PDO error (create_table_ocjene): " . $e->getMessage() ); }
+
+    echo "Napravio tablicu ocjene.<br />";
 }
 ?>

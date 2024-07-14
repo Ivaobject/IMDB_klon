@@ -26,7 +26,7 @@ class functions {
 
     public function isUserAdmin() {
         $st = $this->db->prepare('SELECT admin FROM korisnici WHERE id=:id');
-        $st->execute(['id' => $_SESSION['id_korisnik']]);
+        $st->execute(['id' => $_SESSION['id_user']]);
         $row = $st->fetch();
 
         return $row['admin']; // Vraćanje samo admin statusa, ne cijelog reda
@@ -38,19 +38,21 @@ class functions {
         return;
     }
 
-    public function loginUser() {
-        $st = $this->db->prepare('SELECT has_registered FROM korisnici WHERE username=:username');
-        $st->execute(['username' => $_POST["username"]]);
-        $row = $st->fetch();
+    public function loginUser($username, $password) {
+        $st = $this->db->prepare('SELECT * FROM korisnici WHERE username=:username');
+        $st->execute(['username' => $username]);
+        $user = $st->fetch();
 
-        if ($row['has_registered'] === '0') // Provjera treba li vratiti false
-            return false;
+        if (!$user) {
+            return false; // Korisnik nije pronađen
+        }
 
-        $st = $this->db->prepare('SELECT password_hash FROM korisnici WHERE username=:username');
-        $st->execute(['username' => $_POST["username"]]);
-        $row = $st->fetch();
-
-        return $row['password_hash']; // Vraćanje samo password_hash-a, ne cijelog reda
+        // Provjeri lozinku
+        if (password_verify($password, $user['password_hash'])) {
+            return $user; // Vrati korisnika ako je lozinka ispravna
+        } else {
+            return false; // Neispravna lozinka
+        }
     }
 
     public function newUser(){
@@ -110,37 +112,72 @@ class functions {
             return null; // Return null if no movie found
         }
     
-        $movie = new Movie($row['id'], $row['title'], $row['director'], $row['year'], $row['genre'], $row['actors'], $row['rating']);
+        $movie = new Movie($row['id'], $row['title'], $row['genre'], $row['year'], $row['director'], $row['actors'], $row['rating']);
         return $movie;
     }
     
 
 
-    public function getWatchlist ()
-        {
-                $allmovies = [];
-
-                $db = DB::getConnection();
-                $st = $db->prepare( 'SELECT * FROM watchlists WHERE id_user=:id_user' );
-                $st->execute( ['id_user' => $_SESSION['id_user']] );
-
-                while( $row = $st->fetch() )
-                $allmovies[] = new Watchlist( $row['id'], $row['id_user'], $row['id_movie'], $row['watched'] );
-
-                return $allmovies;
+    public function getWatchlist() {
+        $allmovies = [];
+        $db = DB::getConnection();
+        $st = $db->prepare('SELECT * FROM watchlists WHERE id_user=:id_user');
+        $st->execute(['id_user' => $_SESSION['id_user']]);
+    
+        while ($row = $st->fetch()) {
+            $movie = $this->getMovie($row['id_movie']);
+            if ($movie) {
+                $allmovies[] = $movie;
+            }
         }
+    
+        return $allmovies;
+    }
 
-        public function getUsername() 
-        {
+        public function getUsername($userId){
 
             $db = DB::getConnection();
-            $st = $db->prepare( 'SELECT * FROM korisnici WHERE id=:id_user' );
-            $st->execute( ['id' => $_SESSION['id_user']] );
+            $st = $db->prepare('SELECT * FROM korisnici WHERE id=:id_user');
+            $st->execute(['id_user' => $userId]);
             $row = $st->fetch();
-            $user = new User ($row['id'], $row['username'], $row['password_hash'], $row['email'], $row['registration_sequence'], $row['has_registered'], $row['admin']);
 
-            return $user->username;
+            if (!$row) {
+                return null; // Ako korisnik nije pronađen, možete vratiti null ili neki drugi signal
+            }
+
+            return $row['username'];
         }
+
+        public function getUser($userId) {
+            $query = "SELECT * FROM korisnici WHERE id = :user_id";
+           
+            $stmt = $this->pdo->prepare($query);
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->execute();
+        
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+            if (!$user) {
+                return null; // ili neki drugi način da signalizirate da korisnik nije pronađen
+            }
+        
+            return $user;
+        }
+
+        public function allGenres()
+        {
+            $allGenres = [];
+    
+            $db = DB::getConnection();
+            $st = $db->prepare( 'SELECT DISTINCT genre FROM filmovi' );
+            $st->execute();
+    
+            while( $row = $st->fetch() )
+            $allGenres[] = $row['genre'];
+            
+            return $allGenres;
+        }
+    
 
 
         public function getCommentId( $content )
@@ -195,13 +232,21 @@ class functions {
         {
             $movies = [];
             $db = DB::getConnection();
-            $st = $db->prepare( 'SELECT * FROM filmovi ORDER BY title' );
+            $st = $db->prepare('SELECT id, title, genre, year, director, actors, rating FROM filmovi ORDER BY title');
             $st->execute();
-      
-    
-            while( $row = $st->fetch() )
-                $movies[] = new Movie($row['id'], $row['title'], $row['director'], $row['year'], $row['genre'], $row['actors'], $row['rating']);
-    
+        
+            while ($row = $st->fetch()) {
+         
+                $movies[] = new Movie(
+                    $row['id'],
+                    $row['title'],
+                    $row['genre'],
+                    $row['year'],
+                    $row['director'],
+                    $row['actors'],
+                    $row['rating']
+                );
+            }
             return $movies;
         }
     
@@ -213,7 +258,7 @@ class functions {
             $st->execute();
     
             while( $row = $st->fetch() )
-                $movies[] = new Movie($row['id_movie'], $row['title'], $row['director'], $row['year'], $row['genre'], $row['cast'], $row['rating']);
+                $movies[] = new Movie($row['id'], $row['title'], $row['genre'], $row['year'], $row['director'], $row['actors'], $row['rating']);
     
             return $movies;
         }
@@ -295,7 +340,7 @@ class functions {
             date_default_timezone_set("Europe/Zagreb");
             $date = date("Y-m-d H:i:s"); 
             $db = DB::getConnection();
-            $st = $db->prepare( 'INSERT INTO komentari (id_user, id_movie, content, date) VALUE (:id_user, :id_movie, :content, :date)' );
+            $st = $db->prepare( 'INSERT INTO komentari (id_user, id_movie, tekst, datum) VALUE (:id_user, :id_movie, :content, :date)' );
             $st->execute(['id_user' => $id_user,  'id_movie' => $id_movie, 'content' => $content, 'date' => $date]);
         }
     
@@ -323,10 +368,10 @@ class functions {
     
             $db = DB::getConnection();
             $st = $db->prepare( 'SELECT * FROM filmovi WHERE year=:year' );
-            $st->execute( ['release_year' => $year] );
+            $st->execute(['year' => $year]); 
     
             while( $row = $st->fetch() )
-            $allmovies[] = new Movie($row['id_movie'], $row['title'], $row['director'], $row['year'], $row['genre'], $row['cast'], $row['rating']);
+            $allmovies[] = new Movie($row['id'], $row['title'], $row['director'], $row['year'], $row['genre'], $row['actors'], $row['rating']);
     
             return $allmovies;
         }
@@ -337,6 +382,87 @@ class functions {
             $stmt->execute([':actorName' => $actorName]);
             return $stmt->fetchAll(PDO::FETCH_OBJ);
         }
+
+        public function getAllRatedMovies() {
+            $db = DB::getConnection();
+    
+            $st = $db->prepare('SELECT id_movie FROM ocjene WHERE id_user=:id_user');
+            $st->execute(['id_user' => $_SESSION['id_user']]);
+    
+            $movieList = [];
+            while ($row = $st->fetch()) {
+                $movieList[] = $this->getMovie($row['id_movie']);
+            }
+    
+            return $movieList;
+        }
+    
+        public function getRating($id_movie, $id_user) {
+            $db = DB::getConnection();
+        
+            $st = $db->prepare('SELECT rating FROM ocjene WHERE id_movie=:id_movie AND id_user=:id_user');
+            $st->execute(['id_movie' => $id_movie, 'id_user' => $id_user]);
+        
+            $row = $st->fetch();
+        
+            if ($row) {
+                return (int)$row['rating'];
+            } else {
+                echo "Nema podataka za id_movie: $id_movie, id_user: $id_user<br>";
+                return -1; // Vraća -1 ako korisnik nije ocijenio film
+            }
+        }
+        public function getAverageRating($id_movie) {
+            $db = DB::getConnection();
+    
+            $st = $db->prepare('SELECT rating FROM ocjene WHERE id_movie=:id_movie');
+            $st->execute(['id_movie' => $id_movie]);
+    
+            $n = 0;
+            $rating_sum = 0;
+            while ($row = $st->fetch()) {
+                $rating_sum += $row['rating'];
+                $n++;
+            }
+    
+            if ($n === 0) {
+                return -1;
+            } else {
+                return $rating_sum / $n;
+            }
+        }
+    
+        public function updateAverageRating($id_movie, $average_rating) {
+            $db = DB::getConnection();
+    
+            try {
+                $st = $db->prepare('UPDATE filmovi SET rating=:average_rating WHERE id=:id_movie');
+                $st->execute(['average_rating' => $average_rating, 'id_movie' => $id_movie]);
+            } catch (PDOException $e) {
+                exit("PDO error [ocijene]: " . $e->getMessage());
+            }
+        }
+    
+        public function rateMovie($id_movie, $id_user, $rating) {
+            $db = DB::getConnection();
+    
+            try {
+                $query = "INSERT INTO ocjene (id_movie, id_user, rating) VALUES (:id_movie, :id_user, :rating)";
+                $statement = $db->prepare($query);
+    
+                $statement->bindParam(':id_movie', $id_movie, PDO::PARAM_INT);
+                $statement->bindParam(':id_user', $id_user, PDO::PARAM_INT);
+                $statement->bindParam(':rating', $rating, PDO::PARAM_INT);
+                $statement->execute();
+    
+                $average_rating = $this->getAverageRating($id_movie);
+                $this->updateAverageRating($id_movie, $average_rating);
+    
+            } catch (PDOException $e) {
+                exit('Database error: ' . $e->getMessage());
+            }
+        }
+    
 
 }
 

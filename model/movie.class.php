@@ -1,25 +1,29 @@
-<?php
+<?php 
+class Movie {
+    protected $id, $title, $genre, $director, $rating, $year, $actors;
 
-class movie{
-    protected $id, $title, $genre, $director, $rating, $year;
-
-    function __construct($id, $title, $genre, $director, $rating, $year){
+    public function __construct($id, $title, $genre, $year, $director, $actors, $rating) {
         $this->id = $id;
         $this->title = $title;
         $this->genre = $genre;
-        $this->director = $director;
-        $this->rating = $rating;
         $this->year = $year;
+        $this->director = $director;
+        $this->actors = $actors;
+        $this->rating = $rating;
     }
 
-    function __get( $property ){
-        return $this->$property;
+    public function __get($property) {
+        if (property_exists($this, $property)) {
+            return $this->$property;
+        }
+        return null;
     }
 
-    function __set( $property, $value ){
-        $this->$property=$value;
+    public function __set($property, $value) {
+        if (property_exists($this, $property)) {
+            $this->$property = $value;
+        }
     }
-
 }
 
 ?>

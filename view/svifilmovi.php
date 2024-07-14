@@ -8,29 +8,22 @@
 
 <ul>
 <?php
-foreach( $movieList as $movie )
-{
-    echo
-    '<li>' .
-    '<form method="post" action="index.php?rt=filmovi/movie">' .
-    '<input type="submit" name="movie_title" value="' .
-    $movie->title .
-    '" />' .
-    '<input type="hidden" name="movie_id" value="' .
-    $movie->id .
-    '" />' .
-    '</form>' .
-    'Ocijena: ' ;
-    if( (int) $movie->rating === -1)
-        echo 'Još nitko nije ocijenio taj film!';
-    else 
-        echo $movie->rating;
-    echo
-    '<br>' .
-    '<br>' .
-    '</li>';
-}
-?>
+foreach ($movieList as $movie): ?>
+    <li>
+        <form method="post" action="index.php?rt=movies/movie">
+            <input type="submit" name="movie_title" value="<?php echo $movie->title; ?>" />
+            <input type="hidden" name="id_movie" value="<?php echo $movie->id; ?>" />
+        </form>
+        Žanr:<?php echo ($movie->rating === 0) ? 'Još nitko nije ocijenio taj film!' : $movie->genre; ?>
+
+ 
+        <br>
+        
+        
+
+        <br><br>
+    </li>
+<?php endforeach; ?>
 </ul>
 
 <?php require_once __DIR__ . '/_footer.php'; ?>

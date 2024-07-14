@@ -184,6 +184,30 @@ function seed_table_filmovi(){
     echo "Ubacio filmove u tablicu filmovi.<br />";
 }
 
+function seed_table_ocjene()
+{
+    $db = DB::getConnection();
+
+    try {
+        $st = $db->prepare('INSERT INTO ocjene(id_user, id_movie, rating) VALUES (:id_user, :id_movie, :rating)');
+
+        // Ocjene za filmove
+        $st->execute(array('id_user' => 1, 'id_movie' => 1, 'rating' => 9)); // Pero ocjenjuje The Shawshank Redemption
+        $st->execute(array('id_user' => 2, 'id_movie' => 2, 'rating' => 10)); // Mirko ocjenjuje The Godfather
+        $st->execute(array('id_user' => 3, 'id_movie' => 3, 'rating' => 8)); // Slavko ocjenjuje The Dark Knight
+        $st->execute(array('id_user' => 4, 'id_movie' => 4, 'rating' => 9)); // Ana ocjenjuje Pulp Fiction
+        $st->execute(array('id_user' => 5, 'id_movie' => 5, 'rating' => 10)); // Maja ocjenjuje Forrest Gump
+        $st->execute(array('id_user' => 1, 'id_movie' => 3, 'rating' => 7)); // Pero ocjenjuje The Dark Knight
+        $st->execute(array('id_user' => 4, 'id_movie' => 2, 'rating' => 10)); // Ana ocjenjuje The Godfather
+        $st->execute(array('id_user' => 1, 'id_movie' => 5, 'rating' => 6)); // Pero ocjenjuje Forrest Gump
+
+    } catch (PDOException $e) {
+        exit("PDO error (seed_table_ocjene): " . $e->getMessage());
+    }
+
+    echo "Ubacio ocijene u tablicu ocjene.<br />";
+}
+
 
 
 
@@ -191,7 +215,9 @@ function seed_table_filmovi(){
 //seed_table_ocijene();
 //seed_table_komentari();
 //seed_table_watchlists();
-seed_table_korisnici();
-seed_table_filmovi();
+//seed_table_korisnici();
+//seed_table_filmovi();
+
+seed_table_ocjene();
 ?>
 

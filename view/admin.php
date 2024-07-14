@@ -78,39 +78,42 @@
         <h3><?php echo $title; ?></h3>
         <p>Username: <?php echo $username; ?><br>[admin]</p>
 
+        <?php
+        $ls = new functions;
+
+        $movieList = $ls->getWatchlist();
+        if ($movieList === null) {
+            $movieList = [];
+        }
+        ?>
+
         <div class="watchlist">
             <h4>Watchlist:</h4>
             <ol>
-                <?php foreach($movieList as $movie): ?>
-                    <li>
-                        <form method="post" action="IMDB_klon.php?rt=movies/movie">
-                            <input type="submit" name="movie_title" value="<?php echo $movie->title; ?>" />
-                            <input type="hidden" name="movie_id" value="<?php echo $movie->id_movie; ?>" />
-                        </form>
-                    </li>
-                <?php endforeach; ?>
+                <?php   foreach ($movieList as $movie) {
+                echo '<li>';
+                echo htmlspecialchars($movie->title);
+                echo '</li>';
+        }
+                   
+            ?>
             </ol>
         </div>
-
         <div class="ratings">
-            <h4>Your ratings:</h4>
-            <?php if($emptyratings === "Niste ocjenili nijedan film!"): ?>
-                <p><?php echo $emptyratings; ?></p>
-            <?php else: ?>
-                <ul>
-                    <?php $i = 0; ?>
-                    <?php foreach($ratedMoviesList as $movie): ?>
-                        <li>
-                            <form method="post" action="IMDB_klon.php?rt=movies/movie">
-                                <input type="submit" name="movie_title" value="<?php echo $movie->title; ?>" />
-                                <input type="hidden" name="movie_id" value="<?php echo $movie->id_movie; ?>" />
-                            </form>
-                            <span>Your rating: <?php echo $ratingsList[$i++]; ?></span>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            <?php endif; ?>
-        </div>
+        <h4>Vaše ocijene:</h4>
+        <?php if ($emptyratings === "Niste ocjenili nijedan film!"): ?>
+            <p><?php echo $emptyratings; ?></p>
+        <?php else: ?>
+            <ul>
+                <?php foreach ($ratedMoviesList as $index => $movie): ?>
+                    <li>
+                        <strong><?php echo $movie->title; ?></strong>
+                        <span>Vaša ocjena: <?php echo $ratingsList[$index]; ?></span>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+    </div>
 
         <div class="admin-options">
             <h4>Add a new movie</h4>
@@ -149,6 +152,7 @@
                 <input type="text" name="search_comments" placeholder="Enter comment ID">
                 <button type="submit" name="erasecomment">Obriši!</button>
             </form>
+            <br>
 
             <h4>Novi admin</h4>
             <form method="post" action="IMDB_klon.php?rt=admin/addadmin">
@@ -158,7 +162,7 @@
 
             <span><?php echo $info; ?></span>
             <br>
-            <form method="post" action="IMDB_klon.php?rt=admin/logout">
+            <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>?rt=admin/logout">
                 <button type="submit" name="logout">Izlogiraj se</button>
             </form>
         </div>
