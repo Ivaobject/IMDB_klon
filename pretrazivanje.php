@@ -46,5 +46,6 @@ $lowerq = strtolower($q);
                                                                                                                             
 
     sendJSONandExit( $message );
+    
 	
 ?>

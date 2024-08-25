@@ -26,16 +26,24 @@
     </p>
 
     <p>
-        Director:
+
+    <form id="director_search_form" method="post" action="index.php?rt=movies/search">
+    <p>
+        Redatelj:
         <input type="text" name="search_input" list="datalist_director" id="director_search"> 
-        <datalist id="datalist_director">
-        </datalist>
-        <button type="submit" name="bydirector">Pretraži!</button>
+        <datalist id="datalist_director"></datalist>
+        <button type="submit" name="bydirector" id="search_button">Pretraži!</button>
+    </p>
+    </form>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
     </p>
 
 </form>
 
-<p id="movies"></p>
+<div id="movies"></div>
 
 <?php
 
@@ -47,5 +55,7 @@ foreach ($movieList as $movie) {
 }
 
 ?>
+
+
 
 <?php require_once __DIR__ . '/_footer.php'; ?>
